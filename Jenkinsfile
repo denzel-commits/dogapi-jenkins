@@ -1,7 +1,7 @@
 pipeline{
     agent {
         node{
-            label 'docker-agent-python'
+            label 'docker-agent-python311'
         }
     }
     environment{
@@ -20,8 +20,9 @@ pipeline{
                 sh 'python -m pytest -n=2 --tb=line'
             }
         }
-        stage("Reports"){
-            steps{
+    }
+    post{
+        always{
                 allure([
                         includeProperties: false,
                         jdk: '',
@@ -29,7 +30,6 @@ pipeline{
                         reportBuildPolicy: 'ALWAYS',
                         results: [[path: 'target/allure-results']]
                 ])
-            }
         }
     }
 }

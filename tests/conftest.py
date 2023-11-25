@@ -21,34 +21,6 @@ def dog_api(logger):
     return BaseRequest(base_url="https://dog.ceo/api", logger=logger)
 
 
-@pytest.fixture()
-def get_dog_breeds(dog_api):
-    return dog_api.get(path="/breeds/list/all")
-
-
-@pytest.fixture()
-def get_random_dog(dog_api):
-    return dog_api.get(path="/breeds/image/random")
-
-
-@pytest.fixture()
-def get_random_sub_breed_image(dog_api, request):
-    sub_breed = request.param
-    return dog_api.get(path=f"/breed/hound/{sub_breed}/images/random")
-
-
-@pytest.fixture()
-def get_n_random_sub_breed_images(dog_api, request):
-    n = request.param
-    return dog_api.get(path=f"/breed/hound/english/images/random/{n}")
-
-
-@pytest.fixture()
-def get_breed_images(dog_api, request):
-    breed = request.param
-    return dog_api.get(path=f"/breed/{breed}/images")
-
-
 def request_image_file(url):
     return requests.get(url)
 

@@ -18,13 +18,13 @@ class TestDogBreed:
     @allure.title("Get random dog")
     @pytest.mark.image
     @pytest.mark.parametrize("image_formats", [supported_image_formats])
-    def test_get_random_dog(self, get_random_dog, get_image_file, image_formats):
+    def test_get_random_dog(self, dog_api, get_image_file, image_formats):
 
-        response_obj = get_random_dog
+        response_obj = dog_api.get(path="/breeds/image/random")
         response_obj.assert_status_code(HTTPStatus.OK) \
             .validate_schema(Image) \
             .assert_field_value_equal("status", "success")\
-            .assert_file_ext([".jpeg", ".png"])
+            .assert_file_ext([".jpg", ".png"])
 
         image_url = response_obj.response_json["message"]
 
@@ -34,8 +34,8 @@ class TestDogBreed:
     @allure.story("Get breeds full list")
     @allure.title("Get all breeds")
     @pytest.mark.parametrize("breeds_list", [breeds_data])
-    def test_get_all_breeds(self, get_dog_breeds, breeds_list):
-        get_dog_breeds \
+    def test_get_all_breeds(self, dog_api, breeds_list):
+        dog_api.get(path="/breeds/list/all") \
             .assert_status_code(HTTPStatus.OK) \
             .validate_schema(Breeds) \
             .assert_field_value_equal("status", "success") \
@@ -43,9 +43,9 @@ class TestDogBreed:
 
     @allure.story("Get random sub breed image")
     @allure.title("Get random sub breed image")
-    @pytest.mark.parametrize("get_random_sub_breed_image", [*breeds_data["hound"]], indirect=True)
-    def test_random_sub_breed_image(self, get_random_sub_breed_image, get_image_file):
-        response_obj = get_random_sub_breed_image
+    @pytest.mark.parametrize("sub_breed", [*breeds_data["hound"]])
+    def test_random_sub_breed_image(self, dog_api, get_image_file, sub_breed):
+        response_obj = dog_api.get(path=f"/breed/hound/{sub_breed}/images/random")
         response_obj.assert_status_code(HTTPStatus.OK)\
             .validate_schema(Image)\
             .assert_field_value_equal("status", "success")
@@ -57,11 +57,11 @@ class TestDogBreed:
 
     @allure.story("Get images for breed")
     @allure.title("Get breed images")
-    @pytest.mark.parametrize("get_breed_images", [
+    @pytest.mark.parametrize("breed", [
         *[breed for breed, sub_breed in breeds_data.items() if sub_breed][:10]
-    ], indirect=True)
-    def test_breed_images(self, get_breed_images, get_image_file):
-        response_obj = get_breed_images
+    ])
+    def test_breed_images(self, dog_api, breed):
+        response_obj = dog_api.get(path=f"/breed/{breed}/images")
         response_obj.assert_status_code(HTTPStatus.OK)\
             .validate_schema(Images)\
             .assert_field_value_equal("status", "success")\
@@ -73,12 +73,12 @@ class TestDogBreed:
 
     @allure.story("Get error for not existing breeds")
     @allure.title("Get images by invalid breed")
-    @pytest.mark.parametrize("get_breed_images", [
+    @pytest.mark.parametrize("breed", [
         *[breed+'err' for breed, sub_breed in breeds_data.items() if sub_breed][:10]
-    ], indirect=True)
-    def test_invalid_breed_images(self, get_breed_images, get_image_file):
-        response_obj = get_breed_images
-        response_obj.assert_status_code(HTTPStatus.NOT_FOUND)\
+    ])
+    def test_invalid_breed_images(self, dog_api, breed):
+        dog_api.get(path=f"/breed/{breed}/images")\
+            .assert_status_code(HTTPStatus.NOT_FOUND)\
             .validate_schema(Error)\
             .assert_field_value_equal("status", "error")
 
@@ -86,8 +86,8 @@ class TestDogBreed:
     @allure.title("Get sub breed images")
     @pytest.mark.parametrize("number_of_images", [i for i in range(1, 10)])
     def test_n_random_sub_breed_image(self, dog_api, number_of_images):
-        response_obj = dog_api.get(path=f"/breed/hound/english/images/random/{number_of_images}")
-        response_obj.assert_status_code(HTTPStatus.OK)\
+        response_obj = dog_api.get(path=f"/breed/hound/english/images/random/{number_of_images}")\
+            .assert_status_code(HTTPStatus.OK)\
             .validate_schema(Images) \
             .assert_field_value_equal("status", "success")
 

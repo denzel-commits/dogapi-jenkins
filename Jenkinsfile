@@ -1,7 +1,7 @@
 pipeline{
     agent {
         node{
-            label: 'docker-agent-python310'
+            label 'docker-agent-python'
         }
     }
     environment{
@@ -17,7 +17,7 @@ pipeline{
         stage("Test"){
             steps{
                 echo "Testing..."
-                sh 'python -m pytest --tb=line'
+                sh 'python -m pytest -n=2 --tb=line'
             }
         }
         stage("Reports"){
